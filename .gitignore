@@ -1,0 +1,6 @@
+.env
+*.tar.gz
+ffcall
+sigsegv
+clisp
+clisp-*

@@ -1,10 +1,43 @@
+-include .env
+export $(shell sed 's/=.*//' .env)
+
+VERSION ?= $(shell date +%y.%-m.%-d)
+ORIGIN_URI=https://github.com/roswell/clisp
+ORIGIN_REF=master
+GITHUB=https://github.com/roswell/clisp_head
+TSV_FILE=clisp-bin_uri.tsv
+
 SIGSEGV_VERSION ?= 2.12
 FFCALL_VERSION ?= 2.4
-CLISP_VERSION ?= bin
-ARCH ?= $(shell ros roswell-internal-use uname)
+RELEASE_DATE ?= $(shell date +%F)
+
+OS ?= $(shell ros roswell-internal-use uname)
+CPU ?= $(shell ros roswell-internal-use uname -m)
+VARIANT ?=
+CLISP_LDFLAGS ?=
+PACK=clisp-$(VERSION)-$(CPU)-$(OS)$(VARIANT)
+LAST_VERSION=`ros web.ros version`
+
+hash:
+	git ls-remote --heads $(ORIGIN_URI) $(ORIGIN_REF) |sed -r "s/^([0-9a-fA-F]*).*/\1/" > hash
+
+lasthash:
+	curl -sSL -o lasthash $(GITHUB)/releases/download/$(LAST_VERSION)/hash
+
+upload-hash: hash lasthash
+	diff -u hash lasthash || VERSION=$(VERSION) ros web.ros upload-hash
+
+tsv:
+	TSV_FILE=$(TSV_FILE) ros web.ros tsv
+
+upload-tsv:
+	TSV_FILE=$(TSV_FILE) ros web.ros upload-tsv
+
+version:
+	@echo $(LAST_VERSION) > version
 
 show:
-	@echo $(CLISP_VERSION)
+	@echo $(PACK)
 
 sigsegv:
 	curl -O  https://ftp.gnu.org/gnu/libsigsegv/libsigsegv-$(SIGSEGV_VERSION).tar.gz
@@ -19,21 +52,37 @@ ffcall:
 	rm -rf libffcall-$(FFCALL_VERSION)
 
 clisp: sigsegv ffcall
-	git clone https://github.com/roswell/clisp
+	git clone --depth 100 $(ORIGIN_URI)
 
-archive: clisp
+checkout-clisp: clisp
+	cd clisp;git checkout `cat ../lasthash`
+
+clisp/version.sh: clisp
+	echo VERSION_NUMBER=$(VERSION) > clisp/version.sh
+	echo RELEASE_DATE=$(RELEASE_DATE) >> clisp/version.sh
+	cd clisp/src; \
+		autoconf; \
+		autoheader
+
+compile: show
 	cd clisp; \
+	LDFLAGS="$(CLISP_LDFLAGS)" \
+	FORCE_UNSAFE_CONFIGURE=1 \
 	./configure \
 		--with-libsigsegv-prefix=`pwd`/../sigsegv \
 		--with-libffcall-prefix=`pwd`/../ffcall \
-		--prefix=`pwd`/../clisp-$(CLISP_VERSION);
+		--prefix=`pwd`/../$(PACK); \
 	cd clisp/src; \
 	make; \
 	make install
-	tar cjvf clisp-$(CLISP_VERSION)-binary.tar.bz2 clisp-$(CLISP_VERSION)
-	rm -rf clisp-$(CLISP_VERSION)
+
+archive: $(PACK)
+	tar cjvf $(PACK)-binary.tar.bz2 $(PACK)
+
 
 clean:
 	rm -rf sigsegv ffcall clisp
 	rm -f lib*.gz
+	rm -rf $(PACK)
+	rm -f hash lasthash
 	#rm -f clisp*.tar.bz2
