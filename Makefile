@@ -101,7 +101,7 @@ docker:
 		-e VERSION=$(VERSION) \
 		-e CPU=$(CPU) \
 		-e OS=$(OS) \
-		-e CC='$(CC)'
+		-e CC='$(CC)' \
 		-e VARIANT=$(VARIANT) \
 		-e CFLAGS=$(CFLAGS) \
 		-e LINKFLAGS=$(LINKFLAGS) \
