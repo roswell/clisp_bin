@@ -10,42 +10,44 @@ jobs:
   build:
     runs-on: ubuntu-18.04
     strategy:
+      fail-fast: false
       matrix:
-        lisp: [sbcl-bin/2.0.0]
-        target: [x86-64, x86]
-        suffix: ['']
-        image: ['glibc2.19-sbcl2.0.0:1']
         include:
+          - lisp: sbcl-bin/2.0.0
+            target: x86-64
+            image: 'glibc2.19-sbcl2.0.0:1'
+            suffix: -glibc2.19
+            cc: cc
+          - lisp: sbcl-bin/2.0.0
+            target: x86
+            image: 'glibc2.19-sbcl2.0.0:1'
+            suffix: -glibc2.19
+            cc: 'cc -m32'
           - lisp: sbcl-bin/2.0.0
             target: x86-64
             image: 'glibc2.31-sbcl2.1.4:1'
             suffix: -glibc2.31
+            cc: cc
           - lisp: sbcl-bin/2.0.0
             target: x86
             image: 'glibc2.31-sbcl2.1.4:1'
             suffix: -glibc2.31
+            cc: 'cc -m32'
           - lisp: sbcl-bin/2.0.0
             target: x86-64
             image: 'musl1.2.2-sbcl2.0.5:1'
             suffix: -musl
+            cc: cc
           - lisp: sbcl-bin/2.0.0
             target: x86
             image: 'i386-musl1.2.2-sbcl2.0.5:1'
             suffix: -musl
+            cc: 'cc -m32'
           - lisp: sbcl-bin/2.0.0
             target: x86
             image: 'i386-musl1.1.24-sbcl2.0.5:1'
             suffix: -musl1.1
-          - lisp: sbcl-bin/2.0.0
-            target: x86-64
-            image: 'glibc2.10-sbcl1.5.7:1'
-            suffix: -glibc2.10
-            linkflags: -lrt
-          - lisp: sbcl-bin/2.0.0
-            target: x86
-            image: 'glibc2.10-sbcl1.5.7:1'
-            suffix: -glibc2.10
-            linkflags: -lrt
+            cc: cc
 
     environment: SET_VERSION
 
@@ -75,11 +77,13 @@ jobs:
       - name: build
         env:
           VERSION: ${{ secrets.VERSION }}
-          ARCH: ${{ matrix.target }}
+          CPU: ${{ matrix.target }}
+          OS: linux
           IMAGE: ${{ matrix.image }}
-          SUFFIX: ${{ matrix.suffix }}
+          VARIANT: ${{ matrix.suffix }}
           LINKFLAGS: ${{ matrix.linkflags }}
           GH_REPO: clisp_head
+          CC: ${{ matrix.cc }}
         run: |
           ACTION=checkout-clisp make latest-version docker
           sudo rm -f clisp/version.sh
@@ -90,7 +94,7 @@ jobs:
         env:
           GITHUB_OAUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           VERSION: ${{ secrets.VERSION }}
-          ARCH: ${{ matrix.target }}
+          CPU: ${{ matrix.target }}
           SUFFIX: ${{ matrix.suffix }}
         run: |
           env FILE=`ls *.bz2` make latest-version upload-archive;
