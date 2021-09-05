@@ -78,7 +78,7 @@ compile: show
 	./configure \
 		--with-libsigsegv-prefix=`pwd`/../sigsegv \
 		--with-libffcall-prefix=`pwd`/../ffcall \
-		--prefix=`pwd`/../$(PACK); \
+		--prefix=`pwd`/../$(PACK)
 	cd clisp/src; \
 	make; \
 	make install
