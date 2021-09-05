@@ -79,6 +79,7 @@ jobs:
           IMAGE: ${{ matrix.image }}
           SUFFIX: ${{ matrix.suffix }}
           LINKFLAGS: ${{ matrix.linkflags }}
+          GH_REPO: clisp_head
         run: |
           ACTION=compile make latest-version docker
           ACTION=archive make latest-version docker
