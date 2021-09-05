@@ -43,18 +43,18 @@ version:
 	@echo $(LAST_VERSION) > version
 
 show:
-	@echo $(PACK)
+	@echo PACK=$(PACK) CC=$(CC)
 
 sigsegv:
 	curl -O  https://ftp.gnu.org/gnu/libsigsegv/libsigsegv-$(SIGSEGV_VERSION).tar.gz
 	tar xfz libsigsegv-$(SIGSEGV_VERSION).tar.gz
-	cd libsigsegv-$(SIGSEGV_VERSION); ./configure --prefix=`pwd`/../sigsegv;make;make check;make install
+	cd libsigsegv-$(SIGSEGV_VERSION);CC='$(CC)' ./configure --prefix=`pwd`/../sigsegv;make;make check;make install
 	rm -rf libsigsegv-$(SIGSEGV_VERSION)
 
 ffcall:
 	curl -O https://ftp.gnu.org/gnu/libffcall/libffcall-$(FFCALL_VERSION).tar.gz
 	tar xfz libffcall-$(FFCALL_VERSION).tar.gz
-	cd libffcall-$(FFCALL_VERSION);./configure --prefix=`pwd`/../ffcall --disable-shared;make;make check;make install
+	cd libffcall-$(FFCALL_VERSION);CC='$(CC)' ./configure --prefix=`pwd`/../ffcall --disable-shared;make;make check;make install
 	rm -rf libffcall-$(FFCALL_VERSION)
 
 clisp: sigsegv ffcall
@@ -72,6 +72,7 @@ clisp/version.sh: clisp
 
 compile: show
 	cd clisp; \
+	CC='$(CC)' \
 	LDFLAGS="$(CLISP_LDFLAGS)" \
 	FORCE_UNSAFE_CONFIGURE=1 \
 	./configure \

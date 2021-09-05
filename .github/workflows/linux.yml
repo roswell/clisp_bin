@@ -81,6 +81,8 @@ jobs:
           LINKFLAGS: ${{ matrix.linkflags }}
           GH_REPO: clisp_head
         run: |
+          make checkout-clisp;
+          rm clisp/version.sh;make clisp/version.sh
           ACTION=compile make latest-version docker
           ACTION=archive make latest-version docker
       - name: upload
