@@ -15,6 +15,7 @@ OS ?= $(shell ros roswell-internal-use uname)
 CPU ?= $(shell ros roswell-internal-use uname -m)
 VARIANT ?=
 CLISP_LDFLAGS ?=
+DOCKER_REPO ?= docker.pkg.github.com/roswell/sbcl_bin
 PACK=clisp-$(VERSION)-$(CPU)-$(OS)$(VARIANT)
 LAST_VERSION=`ros web.ros version`
 
@@ -23,6 +24,11 @@ hash:
 
 lasthash:
 	curl -sSL -o lasthash $(GITHUB)/releases/download/$(LAST_VERSION)/hash
+
+latest-version: lasthash version
+	$(eval VERSION := $(shell cat version))
+	$(eval HASH := $(shell cat lasthash))
+	@echo "set version $(VERSION):$(HASH)"
 
 upload-hash: hash lasthash
 	diff -u hash lasthash || VERSION=$(VERSION) ros web.ros upload-hash
@@ -79,6 +85,24 @@ compile: show
 archive: $(PACK)
 	tar cjvf $(PACK)-binary.tar.bz2 $(PACK)
 
+upload-archive: show
+	VERSION=$(VERSION) TARGET=$(ARCH) SUFFIX=$(SUFFIX) ros web.ros upload-archive
+
+pull-docker:
+	docker pull $(DOCKER_REPO)/$(IMAGE);
+
+docker:
+	docker run \
+		-v `pwd`:/tmp \
+		-e VERSION=$(VERSION) \
+		-e CPU=$(CPU) \
+		-e OS=$(OS) \
+		-e SUFFIX=$(SUFFIX) \
+		-e CFLAGS=$(CFLAGS) \
+		-e LINKFLAGS=$(LINKFLAGS) \
+		$(DOCKER_REPO)/$(IMAGE) \
+		bash \
+		-c "cd /tmp;make $(ACTION)"
 
 clean:
 	rm -rf sigsegv ffcall clisp
