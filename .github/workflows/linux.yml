@@ -80,8 +80,8 @@ jobs:
           SUFFIX: ${{ matrix.suffix }}
           LINKFLAGS: ${{ matrix.linkflags }}
         run: |
-          ACTION=compile make -f Build latest-version docker
-          ACTION=archive make -f Build latest-version docker
+          ACTION=compile make latest-version docker
+          ACTION=archive make latest-version docker
       - name: upload
         env:
           GITHUB_OAUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
