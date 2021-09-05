@@ -1,5 +1,7 @@
 .env
 *.tar.gz
+web.ros
+version
 ffcall
 sigsegv
 clisp

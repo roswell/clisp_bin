@@ -22,7 +22,7 @@ LAST_VERSION=`ros web.ros version`
 hash:
 	git ls-remote --heads $(ORIGIN_URI) $(ORIGIN_REF) |sed -r "s/^([0-9a-fA-F]*).*/\1/" > hash
 
-lasthash:
+lasthash: web.ros
 	curl -sSL -o lasthash $(GITHUB)/releases/download/$(LAST_VERSION)/hash
 
 latest-version: lasthash version
@@ -30,23 +30,26 @@ latest-version: lasthash version
 	$(eval HASH := $(shell cat lasthash))
 	@echo "set version $(VERSION):$(HASH)"
 
-upload-hash: hash lasthash
+upload-hash: hash lasthash web.ros
 	diff -u hash lasthash || VERSION=$(VERSION) ros web.ros upload-hash
 
-tsv:
+tsv: web.ros
 	TSV_FILE=$(TSV_FILE) ros web.ros tsv
 
-upload-tsv:
+upload-tsv: web.ros
 	TSV_FILE=$(TSV_FILE) ros web.ros upload-tsv
 
-version:
+version: web.ros
 	@echo $(LAST_VERSION) > version
+
+web.ros:
+	curl -L -O https://raw.githubusercontent.com/roswell/sbcl_head/master/web.ros
 
 show:
 	@echo PACK=$(PACK) CC=$(CC)
 
 sigsegv:
-	curl -O  https://ftp.gnu.org/gnu/libsigsegv/libsigsegv-$(SIGSEGV_VERSION).tar.gz
+	curl -O https://ftp.gnu.org/gnu/libsigsegv/libsigsegv-$(SIGSEGV_VERSION).tar.gz
 	tar xfz libsigsegv-$(SIGSEGV_VERSION).tar.gz
 	cd libsigsegv-$(SIGSEGV_VERSION);CC='$(CC)' ./configure --prefix=`pwd`/../sigsegv;make;make check;make install
 	rm -rf libsigsegv-$(SIGSEGV_VERSION)
@@ -109,5 +112,5 @@ clean:
 	rm -rf sigsegv ffcall clisp
 	rm -f lib*.gz
 	rm -rf $(PACK)
-	rm -f hash lasthash
+	rm -f hash lasthash version
 	#rm -f clisp*.tar.bz2
