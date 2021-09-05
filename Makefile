@@ -98,7 +98,7 @@ docker:
 		-e VERSION=$(VERSION) \
 		-e CPU=$(CPU) \
 		-e OS=$(OS) \
-		-e SUFFIX=$(SUFFIX) \
+		-e VARIANT=$(VARIANT) \
 		-e CFLAGS=$(CFLAGS) \
 		-e LINKFLAGS=$(LINKFLAGS) \
 		$(DOCKER_REPO)/$(IMAGE) \

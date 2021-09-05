@@ -95,6 +95,7 @@ jobs:
           GITHUB_OAUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           VERSION: ${{ secrets.VERSION }}
           CPU: ${{ matrix.target }}
-          SUFFIX: ${{ matrix.suffix }}
+          VARIANT: ${{ matrix.suffix }}
+          GH_REPO: clisp_head
         run: |
           env FILE=`ls *.bz2` make latest-version upload-archive;
