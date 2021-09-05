@@ -76,7 +76,7 @@ clisp/version.sh: clisp
 compile: show
 	cd clisp; \
 	CC='$(CC)' \
-	LDFLAGS="$(CLISP_LDFLAGS)" \
+	LDFLAGS='$(CLISP_LDFLAGS)' \
 	FORCE_UNSAFE_CONFIGURE=1 \
 	./configure \
 		--with-libsigsegv-prefix=`pwd`/../sigsegv \
@@ -102,6 +102,7 @@ docker:
 		-e CPU=$(CPU) \
 		-e OS=$(OS) \
 		-e CC='$(CC)' \
+		-e CLISP_LDFLAGS='$(CLISP_LDFLAGS)' \
 		-e VARIANT=$(VARIANT) \
 		-e CFLAGS=$(CFLAGS) \
 		-e LINKFLAGS=$(LINKFLAGS) \
