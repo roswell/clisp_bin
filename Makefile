@@ -20,7 +20,7 @@ PACK=clisp-$(VERSION)-$(CPU)-$(OS)$(VARIANT)
 LAST_VERSION=`ros web.ros version`
 
 hash:
-	git ls-remote --heads $(ORIGIN_URI) $(ORIGIN_REF) |sed -r "s/^([0-9a-fA-F]*).*/\1/" > hash
+	git ls-remote --heads $(ORIGIN_URI) $(ORIGIN_REF) |sed -E "s/^([0-9a-fA-F]*).*/\1/" > hash
 
 lasthash: web.ros
 	curl -sSL -o lasthash $(GITHUB)/releases/download/$(LAST_VERSION)/hash
@@ -86,7 +86,7 @@ compile: show
 	make; \
 	make install
 
-archive: $(PACK)
+archive: show
 	tar cjvf $(PACK)-binary.tar.bz2 $(PACK)
 
 upload-archive: show
