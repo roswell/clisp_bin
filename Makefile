@@ -30,6 +30,8 @@ latest-version: lasthash version
 	$(eval HASH := $(shell cat lasthash))
 	@echo "set version $(VERSION):$(HASH)"
 
+download: lasthash libsigsegv-$(SIGSEGV_VERSION).tar.gz libffcall-$(FFCALL_VERSION).tar.gz
+
 upload-hash: hash lasthash web.ros
 	diff -u hash lasthash || VERSION=$(VERSION) ros web.ros upload-hash
 
@@ -48,22 +50,24 @@ web.ros:
 show:
 	@echo PACK=$(PACK) CC=$(CC)
 
-sigsegv:
+libsigsegv-$(SIGSEGV_VERSION).tar.gz:
 	curl -O https://ftp.gnu.org/gnu/libsigsegv/libsigsegv-$(SIGSEGV_VERSION).tar.gz
+
+sigsegv: libsigsegv-$(SIGSEGV_VERSION).tar.gz
 	tar xfz libsigsegv-$(SIGSEGV_VERSION).tar.gz
 	cd libsigsegv-$(SIGSEGV_VERSION);CC='$(CC)' ./configure --prefix=`pwd`/../sigsegv;make;make check;make install
 	rm -rf libsigsegv-$(SIGSEGV_VERSION)
 
-ffcall:
+libffcall-$(FFCALL_VERSION).tar.gz:
 	curl -O https://ftp.gnu.org/gnu/libffcall/libffcall-$(FFCALL_VERSION).tar.gz
+
+ffcall: libffcall-$(FFCALL_VERSION).tar.gz
 	tar xfz libffcall-$(FFCALL_VERSION).tar.gz
 	cd libffcall-$(FFCALL_VERSION);CC='$(CC)' ./configure --prefix=`pwd`/../ffcall --disable-shared;make;make check;make install
 	rm -rf libffcall-$(FFCALL_VERSION)
 
-clisp: sigsegv ffcall
+clisp: download
 	git clone --depth 100 $(ORIGIN_URI)
-
-checkout-clisp: clisp
 	cd clisp;git checkout `cat ../lasthash`
 
 clisp/version.sh: clisp
@@ -73,7 +77,7 @@ clisp/version.sh: clisp
 		autoconf; \
 		autoheader
 
-compile: show
+compile: show sigsegv ffcall
 	cd clisp; \
 	CC='$(CC)' \
 	LDFLAGS='$(CLISP_LDFLAGS)' \
