@@ -67,7 +67,7 @@ ffcall: libffcall-$(FFCALL_VERSION).tar.gz
 	rm -rf libffcall-$(FFCALL_VERSION)
 
 clisp: download
-	git clone --depth 100 $(ORIGIN_URI)
+	git clone --depth 100 $(ORIGIN_URI) || true
 	cd clisp;git checkout `cat ../lasthash`
 
 clisp/version.sh: clisp
