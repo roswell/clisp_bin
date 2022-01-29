@@ -5,7 +5,7 @@ VERSION ?= $(shell date +%y.%-m.%-d)
 ORIGIN_URI=https://github.com/roswell/clisp
 ORIGIN_REF=master
 GITHUB=https://github.com/roswell/clisp_head
-TSV_FILE=clisp-bin_uri.tsv
+TSV_FILE?=clisp-bin_uri.tsv
 
 SIGSEGV_VERSION ?= 2.12
 FFCALL_VERSION ?= 2.4
