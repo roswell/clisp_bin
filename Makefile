@@ -23,7 +23,7 @@ hash:
 	git ls-remote --heads $(ORIGIN_URI) $(ORIGIN_REF) |sed -E "s/^([0-9a-fA-F]*).*/\1/" > hash
 
 lasthash: web.ros
-	curl -sSL -o lasthash $(GITHUB)/releases/download/$(LAST_VERSION)/hash
+	curl -sfSL -o lasthash $(GITHUB)/releases/download/$(LAST_VERSION)/hash
 
 latest-version: lasthash version
 	$(eval VERSION := $(shell cat version))
@@ -32,8 +32,9 @@ latest-version: lasthash version
 
 download: lasthash libsigsegv-$(SIGSEGV_VERSION).tar.gz libffcall-$(FFCALL_VERSION).tar.gz
 
-upload-hash: hash lasthash web.ros
-	diff -u hash lasthash || VERSION=$(VERSION) ros web.ros upload-hash
+upload-hash: hash web.ros
+	($(MAKE) lasthash  && diff -u hash lasthash) || \
+	VERSION=$(VERSION) ros web.ros upload-hash
 
 tsv: web.ros
 	TSV_FILE=$(TSV_FILE) ros web.ros tsv
